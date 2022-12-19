@@ -141,20 +141,47 @@ public class Shinua extends SubsystemBase {
         }
     }
 
-    public Pair<String, Double> getColor() {
+    public Pair<BallColor, Double> getColor() {
         Color detectedColor = colorSensor.getColor();
-        String colorString;
         ColorMatchResult match = colorMatcher.matchClosestColor(detectedColor);
 
-        if (match.color.equals(red)) {
-            colorString = "Red";
-        } else if (match.color.equals(blue)) {
-            colorString = "Blue";
-        } else {
-            colorString = "Unknown";
+        return new Pair<>(fromColor(match.color), match.confidence);
+    }
+
+    public enum BallColor {
+        RED, BLUE, UNKNOWN;
+
+        public String toString() {
+            switch (this) {
+                case RED:
+                    return "Red";
+                case BLUE:
+                    return "Blue";
+                default:
+                    return "Unknown";
+            }
         }
 
-        return new Pair<>(colorString, match.confidence);
+        public static BallColor fromString(String colorString) {
+            switch (colorString) {
+                case "Red":
+                    return RED;
+                case "Blue":
+                    return BLUE;
+                default:
+                    return UNKNOWN;
+            }
+        }
+    }
+
+    public BallColor fromColor(Color color) {
+        if (color.equals(red)) {
+            return BallColor.RED;
+        } else if (color.equals(blue)) {
+            return BallColor.BLUE;
+        } else {
+            return BallColor.UNKNOWN;
+        }
     }
 
     @Override
@@ -163,7 +190,7 @@ public class Shinua extends SubsystemBase {
         builder.addDoubleProperty("Green", colorSensor::getGreen, null);
         builder.addDoubleProperty("Blue", colorSensor::getBlue, null);
 
-        builder.addStringProperty("Guessed Color", () -> {return getColor().getFirst();}, null);
+        builder.addStringProperty("Guessed Color", () -> {return getColor().getFirst().toString();}, null);
         builder.addDoubleProperty("Confidence", () -> {return getColor().getSecond();}, null);
 
         builder.addDoubleProperty("Proximity", colorSensor::getProximity, null);
